@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.siku.management.mapper.LoginUserMapper">
+  <resultMap id="BaseResultMap" type="com.siku.management.model.LoginUser">
+    <id column="username" jdbcType="VARCHAR" property="username" />
+    <result column="pwd" jdbcType="VARCHAR" property="pwd" />
+    <result column="workgroup" jdbcType="VARCHAR" property="workgroup" />
+    <result column="privilege" jdbcType="INTEGER" property="privilege" />
+    <result column="datachange_lasttime" jdbcType="TIMESTAMP" property="datachangeLasttime" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    username, pwd, workgroup, privilege, datachange_lasttime
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from loginuser
+    where username = #{username,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from loginuser
+    where username = #{username,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.siku.management.model.LoginUser">
+    insert into loginuser (username, pwd, workgroup, 
+      privilege, datachange_lasttime)
+    values (#{username,jdbcType=VARCHAR}, #{pwd,jdbcType=VARCHAR}, #{workgroup,jdbcType=VARCHAR}, 
+      #{privilege,jdbcType=INTEGER}, #{datachangeLasttime,jdbcType=TIMESTAMP})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="com.siku.management.model.LoginUser">
+    update loginuser
+    set pwd = #{pwd,jdbcType=VARCHAR},
+      workgroup = #{workgroup,jdbcType=VARCHAR},
+      privilege = #{privilege,jdbcType=INTEGER},
+      datachange_lasttime = #{datachangeLasttime,jdbcType=TIMESTAMP}
+    where username = #{username,jdbcType=VARCHAR}
+  </update>
+</mapper>

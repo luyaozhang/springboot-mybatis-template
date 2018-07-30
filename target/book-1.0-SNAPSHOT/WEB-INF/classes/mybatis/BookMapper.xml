@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.siku.management.mapper.BookMapper">
+  <resultMap id="BaseResultMap" type="com.siku.management.model.Book">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="price" jdbcType="DOUBLE" property="price" />
+    <result column="sellnum" jdbcType="INTEGER" property="sellnum" />
+    <result column="datachange_lasttime" jdbcType="TIMESTAMP" property="datachangeLasttime" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, name, price, sellnum, datachange_lasttime
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from book
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from book
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="com.siku.management.model.Book" useGeneratedKeys="true" keyProperty="id">
+    insert into book (name, price,
+      sellnum, datachange_lasttime)
+    values (#{name,jdbcType=VARCHAR}, #{price,jdbcType=DOUBLE},
+      #{sellnum,jdbcType=INTEGER}, #{datachangeLasttime,jdbcType=TIMESTAMP})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="com.siku.management.model.Book">
+    update book
+    set name = #{name,jdbcType=VARCHAR},
+      price = #{price,jdbcType=DOUBLE},
+      sellnum = #{sellnum,jdbcType=INTEGER},
+      datachange_lasttime = #{datachangeLasttime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <select id="selectByName" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from book
+    where name = #{name,jdbcType=VARCHAR}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from book ORDER BY datachange_lasttime DESC
+  </select>
+</mapper>

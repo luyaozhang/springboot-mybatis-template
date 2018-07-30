@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>图书列表</title>
+    <meta charset="utf-8"/>
+    <link rel="stylesheet" th:href="@{/bootstrap/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/bootstrap/css/bootstrap-table.css}"/>
+    <link rel="stylesheet" th:href="@{/css/animate.min.css}"/>
+    <link rel="stylesheet" th:href="@{/css/style.min.css}"/>
+    <link rel="stylesheet" th:href="@{/js/laydate.css}"/>
+    <script th:src="@{/bootstrap/js/jquery-3.3.1.min.js}" ></script>
+    <script th:src="@{/bootstrap/js/bootstrap.min.js}" ></script>
+    <script th:src="@{/bootstrap/js/bootstrap-table.js}" ></script>
+    <script th:src="@{/bootstrap/js/bootstrap-table-locale-all.js}" ></script>
+    <script th:src="@{/bootstrap/js/bootstrap-table-zh-CN.js}" ></script>
+    <script th:src="@{/js/laydate.js}" ></script>
+    <script th:src="@{/js/Common.js}" ></script>
+    <style>
+        .back:hover {
+            cursor: pointer;
+        }
+        .fixed-table-toolbar .btn-group > .btn-group:last-child > .btn {
+            border-top-right-radius: 0px;
+            border-bottom-right-radius: 0px;
+        }
+        label {
+            width: 100px;
+        }
+        .popup_de .popup_box {
+            width: 300px;
+            height: 150px;
+            font-family: '微软雅黑';
+            background-color: #fff;
+            border-radius: 5px;
+            color: #333;
+        }
+        .popup_de .popup_btn {
+            display: inline-block;
+            width: 100px;
+            height: 30px;
+            border-radius: 3px;
+            border: 1px solid #1ab394;
+            font-size: 15px;
+            text-align: center;
+            line-height: 30px;
+            margin-right: 15px;
+            cursor: pointer;
+        }
+        .popup_de .show_msg {
+            display: block;
+            width: 100%;
+            text-align: center;
+            font-size: 18px;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            padding: 10px;
+        }
+        .popup_de .popup_close {
+            width: 30px;
+            height: 30px;
+            font-size: 25px;
+            text-align: center;
+            display: inline-block;
+            cursor: pointer;
+            float: right;
+            border-top-right-radius: 5px;
+            line-height: 30px;
+        }
+        .popup_de .popup_close:hover {
+            background-color: #1ab394;
+            color: #fff;
+        }
+        .popup_de .btn_submit {
+            background-color: #1ab394;
+            color: #fff;
+        }
+        .popup_de .btn_box {
+            text-align: center;
+        }
+    </style>
+    <script type="text/javascript">
+        $(function () {
+            initTable();
+            initButon();
+        });
+        function initTable() {
+            //先销毁表格
+            $('#tb_book').bootstrapTable('destroy');
+            //生成用户数据
+            $('#tb_book').bootstrapTable({
+                method: 'post',
+                contentType: "application/json",
+                url: "/data/book/load",
+                striped: true, //是否显示行间隔色
+                cache: false,  //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+                pagination: true, //是否显示分页（*）
+                sortable: true,  //是否启用排序
+                sortOrder: "asc", //排序方式
+                queryParams: queryParams,//传递参数（*）
+                sidePagination: "client", //分页方式：client客户端分页，server服务端分页（*）
+                pageNumber: 1,            //初始化加载第一页，默认第一页
+                pageSize: 25,             //每页的记录行数（*）
+                pageList: [25, 50, 100],//可供选择的每页的行数（*）
+                search: true, //是否显示表格搜索，此搜索是客户端搜索，不会进服务端，所以，个人感觉意义不大
+                strictSearch: true,
+                showColumns: true, //是否显示所有的列
+                showRefresh: true,  //是否显示刷新按钮
+                minimumCountColumns: 2, //最少允许的列数
+                clickToSelect: false, //是否启用点击选中行
+                showToggle: true, //是否显示详细视图和列表视图的切换按钮
+                cardView: false,  //是否显示详细视图
+                detailView: false, //是否显示父子表,
+                exportTypes: ['csv', 'txt', 'xml'],
+                columns: [
+                    {
+                        title: '编号',
+                        field: 'id',
+                        width: 100
+                    },
+                    {
+                        title: '书名',
+                        field: 'name',
+                        width: 400
+                    },
+                    {
+                        title: '价格',
+                        field: 'price',
+                        width: 100
+                    },
+                    {
+                        title: '销量',
+                        field: 'sellnum',
+                        width: 100
+                    },
+                    {
+                        title: '录入时间',
+                        field: 'datachangeLasttime',
+                        width: 150,
+                       formatter: function (value) {
+                            var timeStamp=new Date(value);
+                            return timeStamp.getFullYear()+'-'+(timeStamp.getMonth()+1)+'-'+timeStamp.getDate()+' '+timeStamp.getHours()+': '+timeStamp.getMinutes()+': '+timeStamp.getSeconds();
+                        }
+                    },
+                    {
+                        title: '操作',
+                        field: 'operate',
+                        events: operateEvents,
+                        formatter: operateFormatter,
+                        align: 'center',
+                        valign: 'middle'
+                    }
+                ],
+                locale: 'zh-CN'
+            });
+        }
+        function operateFormatter(value, row, index) {
+            return [
+                '<button type="button" class="btn btn-warning" style="margin-right:15px;display: none">其他功能</button>',
+                '<button type="button" class="editRow btn btn-warning" data-toggle="modal" data-target="#editBookModal" style="margin-right:15px;">修改</button>',
+                '<button type="button" class="deleteRow btn btn-danger" style="margin-right:15px;">删除</button>'
+            ].join('');
+        }
+        window.operateEvents = {
+            'click .editRow': function (e, value, row, index) {
+                debugger;
+                document.getElementById("editId").value=row['id'];
+                document.getElementById("editName").value=row['name'];
+                document.getElementById("editPrice").value=row['price'];
+                document.getElementById("editSellNum").value=row['sellnum'];
+            },
+            'click .deleteRow': function (e, value, row, index) {
+                deleteId(e, value, row, index)
+            }
+        };
+        function initButon() {
+            var oInit = new Object();
+            var postdata = {};
+            oInit.Init = function () {
+                //初始化页面上面的按钮事件
+            };
+            return oInit;
+        }
+        //查询按钮事件
+        function search() {
+            $('#tb_book').bootstrapTable('refresh', {url: '/data/book/search'});
+        }
+        //请求服务数据时所传参数
+        function queryParams(params) {
+            return {
+                pageSize: params.limit,
+                pageIndex: params.pageNumber,
+                searchIndex: $("#search_index_type").val(),
+                searchIndexValue: $("#search_index_value").val()
+            }
+        }
+        //重新请求
+        function deleteId(e, value, row, index) {
+            $.ajax({
+                type: "POST",
+                contentType: "application/json",
+                url: "/data/book/delete/" + row["id"],
+                dataType: "text",
+                success: function (result) {
+                    if (result == "success") {
+                        alert("删除" + row["name"] + "成功");
+                        initTable();
+                    } else {
+                        alert("删除" + row["name"] + "失败");
+                    }
+                },
+                error: function () {
+                    alert("删除" + row["name"] + "失败");
+                }
+            });
+        }
+        /*$('#editBookModal').on('show.bs.modal', function (event) {
+            debugger;
+            var btnThis = $(event.relatedTarget); //触发事件的按钮
+            var modal = $(this);  //当前模态框
+            var modalId = btnThis.data('id');   //解析出data-id的内容
+            var content = btnThis.closest('tr').find('td').eq(2).text();
+            modal.find('.content').val(content);
+        });*/
+        function changeBook() {
+            var id = document.getElementById("editId").value;
+            var name = document.getElementById("editName").value;
+            var price = document.getElementById("editPrice").value;
+            var sellNum = document.getElementById("editSellNum").value;
+            if (name == "") name = "无名氏";
+            if (price == "") price = "0";
+            if (sellNum == "") sellNum = "0";
+            $.ajax({
+                type: "POST",
+                url: "/data/book/edit",
+                data: {
+                    editId: id,
+                    editName: name,
+                    editPrice: price,
+                    editSellNum: sellNum
+                },
+                dataType: "text",
+                success: function (result) {
+                    if (result == "success") {
+                        alert("修改" + name + "成功");
+                        $('#editBookModal').modal('hide');
+                        initTable();
+                    } else {
+                        alert("修改" + name + "失败");
+                    }
+                },
+                error: function () {
+                    alert("修改" + name + "失败");
+                }
+            });
+        }
+        function addBook() {
+            var name=document.getElementById("newName").value;
+            var price=document.getElementById("newPrice").value;
+            var sellNum=document.getElementById("newSellNum").value;
+            if(name=="") name="无名氏";
+            if(price=="") price="0";
+            if(sellNum=="") sellNum="0";
+            $.ajax({
+                type: "POST",
+                url: "/data/book/add/"+name+"/"+price+"/"+sellNum,
+                dataType: "text",
+                success: function (result) {
+                    if (result == "success") {
+                        alert("添加" + name + "成功");
+                        document.getElementById("newName").value="";
+                        document.getElementById("newPrice").value="";
+                        document.getElementById("newSellNum").value="";
+                        initTable();
+                    } else {
+                        alert("添加" + name + "失败");
+                    }
+                },
+                error: function () {
+                    alert("添加" + name + "失败");
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+<center>
+<p th:text="'welcome '+ ${name}+ ' !'"/>
+<div class="tableBody" style="width: 95%;">
+    <form class="" role="form">
+        <div class="container">
+            <div class="row">
+                <!--前缀-->
+                <div class="form-group col-lg-3" style="width: 22%;">
+                    <div class="input-group">
+                        <span class="input-group-addon">索引名称</span>
+                        <select id="search_index_type" class="form-control" style="width: 165px;">
+                            <option select="selected" value="0"></option>
+                            <option value="1">编号</option>
+                            <option value="2">书名</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group col-lg-3" style="width: 27%;">
+                    <div class="input-group">
+                        <span class="input-group-addon">索引值</span>
+                        <input id="search_index_value" class="form-control" style="width: 222px;" type="text"/>
+                    </div>
+                </div>
+                <div class="form-group col-lg-3" style="width: 6%; padding-left: 5px;">
+                    <div class="input-group" style="margin-right: 10px;">
+                        <input type="button" id="btnSearch" class="btn btn-primary" onclick="search();" value="搜 索"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+    <table class="table table-hover" style="margin-bottom: 0">
+        <tr>
+            <td>书名</td>
+            <td><input id="newName" style="width: 400px;" th:title="newName" type="text"/></td>
+            <td>价格</td>
+            <td><input id="newPrice" th:title="newPrice" type="text"/></td>
+            <td>销量</td>
+            <td><input id="newSellNum" th:title="newSellNum" type="text"/></td>
+            <td><input type="submit" class="btn btn-default" onclick="addBook()" value="添加"/></td>
+        </tr>
+    </table>
+    <table id="tb_book" class="table table-hover"></table>
+</div>
+<div class="modal fade" id="editBookModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">修改书信息</h4>
+            </div>
+            <div class="modal-body">
+                编号：<input type="text" name="editId" id="editId" title="" readonly="readonly"/>
+                书名：<input type="text" name="editName" id="editName" title=""/>
+
+                价格：<input type="text" name="editPrice" id="editPrice" title=""/>
+                销量：<input type="text" name="editSellNum" id="editSellNum" title=""/>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" onclick="changeBook()">提交更改</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+</center>
+</body>
+</html>

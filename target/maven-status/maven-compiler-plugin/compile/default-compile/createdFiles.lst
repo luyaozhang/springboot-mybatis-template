@@ -1,0 +1,8 @@
+com\siku\management\mapper\LoginUserMapper.class
+com\siku\management\controller\LoginController.class
+com\siku\management\Application.class
+com\siku\management\model\Book.class
+com\siku\management\entity\SearchRequest.class
+com\siku\management\model\LoginUser.class
+com\siku\management\mapper\BookMapper.class
+com\siku\management\controller\DataController.class
