@@ -1,2 +1,4 @@
 # springboot-mybatis-template
-web by springboot+mybatis
+- web by springboot 
+- page: themeleaf
+- data: mybatis
